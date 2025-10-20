@@ -1,0 +1,147 @@
+#
+# ~/.bashrc
+#
+
+
+# ENV settings
+export ALTSERVER_ANISETTE_SERVER=http://127.0.0.1:6969
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+PS1='[\u@\h \W]\$ '
+source /usr/share/nvm/init-nvm.sh
+
+alias pls='sudo'
+alias ls='ls --color=auto'
+#alias ls='nnn -de'
+alias ll='ls -la'
+alias grep='grep --color=auto'
+alias editbashrc='nano ~/.bashrc'
+alias updatebashrc='source ~/.bashrc'
+#alias nnn='nnn -d -e -H -r'
+
+alias cdvmm='cd ~/Code/Laravel/vmm-laravel-server'
+alias cdhs='cd ~/Homestead'
+
+alias npmvmm='npm --prefix ~/Code/Laravel/vmm-laravel-server run dev'
+alias vagranths='cd ~/Homestead; vagrant'
+alias hsup='vagranths up; cd -'
+alias hsdown='vagranths halt; cd -'
+alias sshhs='vagranths ssh; cd -'
+alias art='php artisan'
+alias editphpext='sudo nano /etc/php/conf.d/extensions.ini'
+
+alias yayup='yay -Syu'
+alias pacup='sudo pacman -Syu'
+alias pacls='pacman -Qe'
+alias pacrm='pacman -Rns'
+
+#tmux
+alias tmuxnew='tmux new -s'
+alias tmuxa='tmux a -t'
+alias tmuxls='tmux list-sessions'
+alias tmuxkill='tmux kill-sessions -t'
+
+alias notify='notify_command || notify_command' # use: <command> && <command> && notify or <command> && <command>; notify
+
+trap 'previous_command=$this_command; this_command=$BASH_COMMAND' DEBUG
+
+unlock_bitwarden() {
+  # Ensure BW_SESSION is set
+  if [ -z "$BW_SESSION" ]; then
+    echo "Bitwarden is locked"
+    export BW_SESSION=$(flatpak run --command=bw com.bitwarden.desktop unlock --raw)
+  else
+   echo "Bitwarden session found"
+  fi
+}
+
+sideload() {
+  unlock_bitwarden
+
+  local ipa_path="${1:-/home/mujtaba/Downloads/YTLitePlus.ipa}"
+  local apple_account_uuid="ce5ee805-11de-49ee-aba3-ad4100f9f8c7"
+  local ipad_uuid="00008110-000C114C1103801E"
+  local username=$(flatpak run --command=bw com.bitwarden.desktop get username "$apple_account_uuid" --raw)
+  local password=$(flatpak run --command=bw com.bitwarden.desktop get password "$apple_account_uuid" --raw)
+
+  echo "Using IPA file: $ipa_path to $ipad_uuid for using apple account $username"
+
+  altserver -u "$ipad_uuid" -a "$username" -p "$password" "$ipa_path"
+}
+
+notify_command() {
+  local exit_status=$?
+  # prefer the recorded previous_command, fallback to history if empty
+  local cmd="${previous_command:-$(history 2 | sed -n '1p' | sed 's/^ *[0-9]* *//')}"
+  [ -z "$cmd" ] && cmd="(unknown)"
+
+  local title
+  if [ "$exit_status" -eq 0 ]; then
+    title="Task Completed"
+  else
+    title="Task Failed"
+  fi
+
+  # include command and exit code in the notification body
+  ntfy "Command: $cmd | Exit code: $exit_status" "$title" "commands"
+}
+
+ntfy() {
+  local message="${1:-Complete}"
+  local title="${2:-Notification}"
+  local topic="${3:-misc}"
+
+  # sanitize topic (lowercase, allow a-z0-9 . _ -); fallback to misc if empty
+  topic=$(printf '%s' "$topic" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]/-/g' | sed 's/^-*//;s/-*$//')
+  [ -z "$topic" ] && topic='misc'
+
+  # build a JSON string payload using pure bash (no jq/python)
+  local esc=${message//\\/\\\\}
+  esc=${esc//\"/\\\"}
+  esc=${esc//$'\r'/\\r}
+  esc=${esc//$'\n'/\\n}
+  local payload="${esc}"
+
+  # sanitize title for header (strip newlines and double-quotes)
+  local safe_title=${title//$'\n'/ }
+  safe_title=${safe_title//\"/}
+
+  curl -sS \
+    -H "Accept: application/json" \
+    -H "Content-Type: application/json" \
+    -H "X-Title: ${safe_title}" \
+    -X POST --data-raw "$payload" "https://ntfy.mujtabaasif.dedyn.io/${topic}"
+}
+
+n() {
+    # Block nesting of nnn in subshells
+    [ "${NNNLVL:-0}" -eq 0 ] || {
+        echo "nnn is already running"
+        return
+    }
+
+    # The behaviour is set to cd on quit (nnn checks if NNN_TMPFILE is set)
+    # If NNN_TMPFILE is set to a custom path, it must be exported for nnn to
+    # see. To cd on quit only on ^G, remove the "export" and make sure not to
+    # use a custom path, i.e. set NNN_TMPFILE *exactly* as follows:
+    #      NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
+    export NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
+    export NNN_OPTS="xr"  # read-only + no delete
+
+    # Unmask ^Q (, ^V etc.) (if required, see `stty -a`) to Quit nnn
+    # stty start undef
+    # stty stop undef
+    # stty lwrap undef
+    # stty lnext undef
+
+    # The command builtin allows one to alias nnn to n, if desired, without
+    # making an infinitely recursive alias
+    command nnn -d -e -H "$@"
+
+    [ ! -f "$NNN_TMPFILE" ] || {
+        . "$NNN_TMPFILE"
+        rm -f -- "$NNN_TMPFILE" > /dev/null
+    }
+}
