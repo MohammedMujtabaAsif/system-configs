@@ -36,6 +36,7 @@ alias yayup='yay -Syu'
 alias pacup='sudo pacman -Syu'
 alias pacls='pacman -Qe'
 alias pacrm='pacman -Rns'
+alias systemupdate='yay --noconfirm && flatpak uninstall --unused && flatpak update -y && notify'
 
 #tmux
 alias tmuxnew='tmux new -s'
@@ -43,7 +44,11 @@ alias tmuxa='tmux a -t'
 alias tmuxls='tmux list-sessions'
 alias tmuxkill='tmux kill-sessions -t'
 
-alias notify='notify_command || notify_command' # use: <command> && <command> && notify or <command> && <command>; notify
+#zellij
+alias zel='zellij'
+alias zelrename='zellij action rename-session'
+
+alias notify='notification_for_command || notification_for_command' # use: <command> && <command> && notify or <command> && <command>; notify
 
 trap 'previous_command=$this_command; this_command=$BASH_COMMAND' DEBUG
 
@@ -71,7 +76,7 @@ sideload() {
   altserver -u "$ipad_uuid" -a "$username" -p "$password" "$ipa_path"
 }
 
-notify_command() {
+notification_for_command() {
   local exit_status=$?
   # prefer the recorded previous_command, fallback to history if empty
   local cmd="${previous_command:-$(history 2 | sed -n '1p' | sed 's/^ *[0-9]* *//')}"
@@ -85,10 +90,10 @@ notify_command() {
   fi
 
   # include command and exit code in the notification body
-  ntfy "Command: $cmd | Exit code: $exit_status" "$title" "commands"
+  send_notification "Command: $cmd | Exit code: $exit_status" "$title" "commands"
 }
 
-ntfy() {
+send_notification() {
   local message="${1:-Complete}"
   local title="${2:-Notification}"
   local topic="${3:-misc}"
