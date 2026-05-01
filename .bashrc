@@ -6,6 +6,14 @@
 # ENV settings
 export ALTSERVER_ANISETTE_SERVER=http://127.0.0.1:6969
 
+# FVM: Flutter Version Management https://fvm.app
+export PATH="/home/mujtaba/fvm/bin:$PATH"
+
+# Android SDK
+export ANDROID_HOME=$HOME/android-sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
@@ -20,7 +28,16 @@ alias grep='grep --color=auto'
 alias editbashrc='nano ~/.bashrc'
 alias updatebashrc='source ~/.bashrc'
 #alias nnn='nnn -d -e -H -r'
+alias netspeed="pls cat /sys/class/net/enp42s0/speed"
+alias swapusage="swapon --show"
+alias findfile="find . -type f -iname"
+alias finddirectory="find . -type d -iname"
 
+# git
+alias gitmerged='git branch --merged | rg -v "master|staging|release/*"'
+alias gitprune='gitmerged | xargs git branch -d'
+
+# coding
 alias cdvmm='cd ~/Code/Laravel/vmm-laravel-server'
 alias cdhs='cd ~/Homestead'
 
@@ -32,19 +49,20 @@ alias sshhs='vagranths ssh; cd -'
 alias art='php artisan'
 alias editphpext='sudo nano /etc/php/conf.d/extensions.ini'
 
+# package manager
 alias yayup='yay -Syu'
 alias pacup='sudo pacman -Syu'
 alias pacls='pacman -Qe'
 alias pacrm='pacman -Rns'
 alias systemupdate='yay --noconfirm && flatpak uninstall --unused && flatpak update -y && notify'
 
-#tmux
+# tmux
 alias tmuxnew='tmux new -s'
 alias tmuxa='tmux a -t'
 alias tmuxls='tmux list-sessions'
 alias tmuxkill='tmux kill-sessions -t'
 
-#zellij
+# zellij
 alias zel='zellij'
 alias zelrename='zellij action rename-session'
 
@@ -150,3 +168,11 @@ n() {
         rm -f -- "$NNN_TMPFILE" > /dev/null
     }
 }
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/home/mujtaba/.lmstudio/bin"
+# End of LM Studio CLI section
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
