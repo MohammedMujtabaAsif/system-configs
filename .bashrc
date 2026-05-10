@@ -2,33 +2,23 @@
 # ~/.bashrc
 #
 
-
 # ENV settings
-export ALTSERVER_ANISETTE_SERVER=http://127.0.0.1:6969
 
 # FVM: Flutter Version Management https://fvm.app
-export PATH="/home/mujtaba/fvm/bin:$PATH"
+#export PATH="/home/mujtaba/fvm/bin:$PATH"
 
 # Android SDK
-export ANDROID_HOME=$HOME/android-sdk
-export PATH=$PATH:$ANDROID_HOME/platform-tools
-export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+#export ANDROID_HOME=$HOME/android-sdk
+#export PATH=$PATH:$ANDROID_HOME/platform-tools
+#export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
 
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-PS1='[\u@\h \W]\$ '
 source /usr/share/nvm/init-nvm.sh
-
-alias pls='sudo'
-alias ls='ls --color=auto'
-#alias ls='nnn -de'
-alias ll='ls -la'
-alias grep='grep --color=auto'
 alias editbashrc='nano ~/.bashrc'
 alias updatebashrc='source ~/.bashrc'
-#alias nnn='nnn -d -e -H -r'
-alias netspeed="pls cat /sys/class/net/enp42s0/speed"
+alias netspeed="sudo cat /sys/class/net/enp42s0/speed"
 alias swapusage="swapon --show"
 alias findfile="find . -type f -iname"
 alias finddirectory="find . -type d -iname"
@@ -38,23 +28,21 @@ alias gitmerged='git branch --merged | rg -v "master|staging|release/*"'
 alias gitprune='gitmerged | xargs git branch -d'
 
 # coding
-alias cdvmm='cd ~/Code/Laravel/vmm-laravel-server'
+alias cdvmm='cd ~/Git/vmm-laravel-server'
 alias cdhs='cd ~/Homestead'
 
-alias npmvmm='npm --prefix ~/Code/Laravel/vmm-laravel-server run dev'
+alias npmvmm='npm --prefix ~/Git/vmm-laravel-server run dev'
 alias vagranths='cd ~/Homestead; vagrant'
 alias hsup='vagranths up; cd -'
 alias hsdown='vagranths halt; cd -'
 alias sshhs='vagranths ssh; cd -'
-alias art='php artisan'
-alias editphpext='sudo nano /etc/php/conf.d/extensions.ini'
 
 # package manager
 alias yayup='yay -Syu'
 alias pacup='sudo pacman -Syu'
 alias pacls='pacman -Qe'
 alias pacrm='pacman -Rns'
-alias systemupdate='yay --noconfirm && flatpak uninstall --unused && flatpak update -y && notify'
+#alias systemupdate='yay --noconfirm && flatpak uninstall --unused && flatpak update -y && notify'
 
 # tmux
 alias tmuxnew='tmux new -s'
@@ -137,41 +125,6 @@ send_notification() {
     -H "X-Title: ${safe_title}" \
     -X POST --data-raw "$payload" "https://ntfy.mujtabaasif.dedyn.io/${topic}"
 }
-
-n() {
-    # Block nesting of nnn in subshells
-    [ "${NNNLVL:-0}" -eq 0 ] || {
-        echo "nnn is already running"
-        return
-    }
-
-    # The behaviour is set to cd on quit (nnn checks if NNN_TMPFILE is set)
-    # If NNN_TMPFILE is set to a custom path, it must be exported for nnn to
-    # see. To cd on quit only on ^G, remove the "export" and make sure not to
-    # use a custom path, i.e. set NNN_TMPFILE *exactly* as follows:
-    #      NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
-    export NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
-    export NNN_OPTS="xr"  # read-only + no delete
-
-    # Unmask ^Q (, ^V etc.) (if required, see `stty -a`) to Quit nnn
-    # stty start undef
-    # stty stop undef
-    # stty lwrap undef
-    # stty lnext undef
-
-    # The command builtin allows one to alias nnn to n, if desired, without
-    # making an infinitely recursive alias
-    command nnn -d -e -H "$@"
-
-    [ ! -f "$NNN_TMPFILE" ] || {
-        . "$NNN_TMPFILE"
-        rm -f -- "$NNN_TMPFILE" > /dev/null
-    }
-}
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/home/mujtaba/.lmstudio/bin"
-# End of LM Studio CLI section
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
